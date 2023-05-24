@@ -1,14 +1,19 @@
 let tasks = [];
 
 function updateTime() {
-    chrome.storage.local.get(["timer"], (res) => {
+    chrome.storage.local.get(["timer", "timeOption", "isRunning"], (res) => {
         const time = document.getElementById("time");
-        const minutes = `${25 - Math.ceil(res.timer / 60)}`.padStart(2, "0");
+        const minutes = `${
+            res.timeOption - Math.ceil(res.timer / 60)
+        }`.padStart(2, "0");
         let seconds = "00";
         if (res.timer % 60 != 0) {
             seconds = `${60 - (res.timer % 60)}`.padStart(2, "0");
         }
         time.textContent = `${minutes}:${seconds}`;
+        startTimerBtn.textContent = res.isRunning
+            ? "Pause Timer"
+            : "Start Timer";
     });
 }
 
@@ -16,7 +21,6 @@ updateTime();
 setInterval(updateTime, 1000);
 
 const startTimerBtn = document.getElementById("start-timer-btn");
-
 startTimerBtn.addEventListener("click", () => {
     chrome.storage.local.get(["isRunning"], (res) => {
         chrome.storage.local.set(
@@ -66,6 +70,7 @@ function renderTask(taskNum) {
     text.type = "text";
     text.placeholder = "Enter a task...";
     text.value = tasks[taskNum];
+    text.className = "task-input";
     text.addEventListener("change", () => {
         tasks[taskNum] = text.value;
         saveTasks();
@@ -73,7 +78,8 @@ function renderTask(taskNum) {
 
     const deleteBtn = document.createElement("input");
     deleteBtn.type = "button";
-    deleteBtn.value = "x";
+    deleteBtn.value = "X";
+    deleteBtn.className = "task-delete";
     deleteBtn.addEventListener("click", () => {
         deleteTask(taskNum);
     });
@@ -84,6 +90,7 @@ function renderTask(taskNum) {
     const taskContainer = document.getElementById("task-container");
     taskContainer.appendChild(taskRow);
 }
+
 function addTask() {
     const taskNum = tasks.length;
     tasks.push("");
